@@ -25,19 +25,47 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Create the map
-        const map = L.map('map').setView([47.7346560, -122.2569252], 22);
 
-        // Add the map background
+        // =========================================================
+        // MAP SETTINGS
+        // =========================================================
+
+        // Area where users are allowed to move around
+        const gardenBounds = L.latLngBounds(
+            [47.7345, -122.2572],   // Southwest corner
+            [47.7348, -122.2566]    // Northeast corner
+        );
+
+        // Create the map
+        const map = L.map('map', {
+            minZoom: 21,                    // Can't zoom out farther than this
+            maxZoom: 22,                    // Allows closer zooming
+            maxBounds: gardenBounds,        // Keeps map inside garden area
+            maxBoundsViscosity: 1.0         // Makes the boundary hard
+        }).setView([47.7346560, -122.2569252], 22);
+
+
+        // =========================================================
+        // MAP BACKGROUND
+        // =========================================================
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 22,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Test marker
+
+        // =========================================================
+        // TEST MARKER
+        // =========================================================
+
         L.marker([47.7346560, -122.2569456])
             .addTo(map)
-            .bindPopup("<b>Plant 6: Salal (Gaultheria shallon)</b><br>Placeholder text. Can add health info or anything we want here.");
+            .bindPopup(
+                "<b>Plant 6: Salal (Gaultheria shallon)</b><br>" +
+                "Placeholder text. Can add health info or anything we want here."
+            );
+
     </script>
 
 </body>
