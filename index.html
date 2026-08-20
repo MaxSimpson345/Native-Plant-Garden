@@ -32,17 +32,17 @@
 
         // Area where users are allowed to move around
         const gardenBounds = L.latLngBounds(
-            [47.7345, -122.2572],   // Southwest corner
-            [47.7348, -122.2566]    // Northeast corner
+            [47.73445, -122.25720],   // Southwest corner
+            [47.73475, -122.25685]    // Northeast corner
         );
 
         // Create the map
         const map = L.map('map', {
-            minZoom: 21,                    // Can't zoom out farther than this
-            maxZoom: 22,                    // Allows closer zooming
-            maxBounds: gardenBounds,        // Keeps map inside garden area
-            maxBoundsViscosity: 1.0         // Makes the boundary hard
-        }).setView([47.7346560, -122.2569252], 22);
+            minZoom: 17,                    // Prevents zooming too far out
+            maxZoom: 19,                    // OpenStreetMap detail limit
+            maxBounds: gardenBounds,        // Keeps map within garden area
+            maxBoundsViscosity: 1.0         // Makes boundary hard
+        }).setView([47.7346560, -122.2569252], 19);
 
 
         // =========================================================
@@ -50,21 +50,101 @@
         // =========================================================
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 22,
+            maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
 
         // =========================================================
-        // TEST MARKER
+        // PLANT / TEST POINTS
         // =========================================================
 
+        // Original test marker
         L.marker([47.7346560, -122.2569456])
             .addTo(map)
             .bindPopup(
                 "<b>Plant 6: Salal (Gaultheria shallon)</b><br>" +
                 "Placeholder text. Can add health info or anything we want here."
             );
+
+
+        // New points
+
+        L.marker([47.7346974, -122.2569538])
+            .addTo(map)
+            .bindPopup("<b>New Point 1</b>");
+
+        L.marker([47.7345770, -122.2570473])
+            .addTo(map)
+            .bindPopup("<b>New Point 2</b>");
+
+        L.marker([47.7344863, -122.2570291])
+            .addTo(map)
+            .bindPopup("<b>New Point 3</b>");
+
+        L.marker([47.7345030, -122.2570256])
+            .addTo(map)
+            .bindPopup("<b>New Point 4</b>");
+
+        L.marker([47.7345285, -122.2570149])
+            .addTo(map)
+            .bindPopup("<b>New Point 5</b>");
+
+        L.marker([47.7345389, -122.2570277])
+            .addTo(map)
+            .bindPopup("<b>New Point 6</b>");
+
+        L.marker([47.7345305, -122.2570339])
+            .addTo(map)
+            .bindPopup("<b>New Point 7</b>");
+
+        L.marker([47.7345457, -122.2570543])
+            .addTo(map)
+            .bindPopup("<b>New Point 8</b>");
+
+        L.marker([47.7345297, -122.2570654])
+            .addTo(map)
+            .bindPopup("<b>New Point 9</b>");
+
+        L.marker([47.7345306, -122.2570681])
+            .addTo(map)
+            .bindPopup("<b>New Point 10</b>");
+
+        L.marker([47.7345339, -122.2570725])
+            .addTo(map)
+            .bindPopup("<b>New Point 11</b>");
+
+        L.marker([47.7345046, -122.2571349])
+            .addTo(map)
+            .bindPopup("<b>New Point 12</b>");
+
+        L.marker([47.7344975, -122.2571361])
+            .addTo(map)
+            .bindPopup("<b>New Point 13</b>");
+
+        L.marker([47.7344831, -122.2571443])
+            .addTo(map)
+            .bindPopup("<b>New Point 14</b>");
+
+        L.marker([47.7344940, -122.2571582])
+            .addTo(map)
+            .bindPopup("<b>New Point 15</b>");
+
+        L.marker([47.7345022, -122.2571666])
+            .addTo(map)
+            .bindPopup("<b>New Point 16</b>");
+
+        L.marker([47.7345199, -122.2571661])
+            .addTo(map)
+            .bindPopup("<b>New Point 17</b>");
+
+        L.marker([47.7345362, -122.2571556])
+            .addTo(map)
+            .bindPopup("<b>New Point 18</b>");
+
+        L.marker([47.7345397, -122.2571437])
+            .addTo(map)
+            .bindPopup("<b>New Point 19</b>");
 
     </script>
 
