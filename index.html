@@ -27,13 +27,38 @@
     <script>
 
         // =========================================================
+        // MAP MOVEMENT BOUNDARY
+        // =========================================================
+
+        // This is intentionally larger than the actual garden.
+        // It controls where the user is allowed to move the map.
+
+        const movementBounds = L.latLngBounds(
+            [47.73435, -122.25735],   // Southwest
+            [47.73485, -122.25675]    // Northeast
+        );
+
+
+        // =========================================================
         // CREATE MAP
         // =========================================================
 
         const map = L.map('map', {
             minZoom: 17,
-            maxZoom: 30
-        });
+
+            // Allows extremely close zooming
+            maxZoom: 30,
+
+            // Prevents the user from wandering away
+            maxBounds: movementBounds,
+
+            // Makes the boundary firm
+            maxBoundsViscosity: 1.0
+
+        }).setView(
+            [47.7346560, -122.2569252],
+            19
+        );
 
 
         // =========================================================
@@ -43,8 +68,14 @@
         L.tileLayer(
             'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
+                // Highest zoom level where OSM actually has tiles
+                maxNativeZoom: 19,
+
+                // But allow Leaflet to keep zooming
+                maxZoom: 30,
+
+                attribution:
+                    '&copy; OpenStreetMap contributors'
             }
         ).addTo(map);
 
@@ -54,32 +85,35 @@
         // =========================================================
 
         fetch('garden-geometry.geojson')
+
             .then(response => response.json())
+
             .then(data => {
 
                 const garden = L.geoJSON(data, {
+
                     style: {
                         color: '#3388ff',
                         weight: 3,
                         fillColor: '#3388ff',
                         fillOpacity: 0.15
                     }
+
                 }).addTo(map);
 
 
-                // Zoom to the garden
+                // Zoom to the garden when the page loads
                 map.fitBounds(garden.getBounds());
 
-
-                // Keep users inside the garden
-                map.setMaxBounds(garden.getBounds());
-
             })
+
             .catch(error => {
+
                 console.error(
                     'Could not load garden-geometry.geojson:',
                     error
                 );
+
             });
 
 
@@ -88,11 +122,22 @@
         // =========================================================
 
         const plantStyle = {
+
+            // Very small dot
             radius: 2,
+
+            // Outline
             color: '#000000',
+
+            // Outline thickness
             weight: 1,
+
+            // Inside color
             fillColor: '#3388ff',
+
+            // Fully visible
             fillOpacity: 1
+
         };
 
 
@@ -112,7 +157,7 @@
 
 
         // =========================================================
-        // NEW PLANT POINTS
+        // OTHER PLANT POINTS
         // =========================================================
 
         L.circleMarker([47.7346974, -122.2569538], plantStyle)
