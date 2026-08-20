@@ -38,11 +38,11 @@
 
         // Create the map
         const map = L.map('map', {
-            minZoom: 17,                    // Prevents zooming too far out
-            maxZoom: 19,                    // OpenStreetMap detail limit
-            maxBounds: gardenBounds,        // Keeps map within garden area
-            maxBoundsViscosity: 1.0         // Makes boundary hard
-        }).setView([47.7346560, -122.2569252], 19);
+    minZoom: 17,
+    maxZoom: 22,
+    maxBounds: gardenBounds,
+    maxBoundsViscosity: 1.0
+}).setView([47.7346560, -122.2569252], 19);
 
 
         // =========================================================
@@ -50,12 +50,12 @@
         // =========================================================
 
         L.tileLayer(
-        'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-        {
-            maxZoom: 19,
-            attribution: 'Imagery © U.S. Geological Survey'
-        }
-    ).addTo(map);
+    'https://imagery.nationalmap.gov/arcgis/services/USGSNAIPPlus/ImageServer/tile/{z}/{y}/{x}',
+    {
+        maxZoom: 22,
+        attribution: 'Imagery © U.S. Geological Survey'
+    }
+).addTo(map);
 
 
         // =========================================================
