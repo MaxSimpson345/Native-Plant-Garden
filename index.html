@@ -27,38 +27,60 @@
     <script>
 
         // =========================================================
-        // GARDEN BOUNDARY
-        // =========================================================
-
-        const gardenBounds = L.latLngBounds(
-            [47.73445, -122.25720],
-            [47.73475, -122.25685]
-        );
-
-
-        // =========================================================
         // CREATE MAP
         // =========================================================
 
         const map = L.map('map', {
             minZoom: 17,
-            maxZoom: 23,
-            maxBounds: gardenBounds,
-            maxBoundsViscosity: 1.0
-        }).setView([47.7346560, -122.2569252], 19);
+            maxZoom: 30
+        });
 
 
         // =========================================================
-        // KING COUNTY AERIAL IMAGERY
+        // OPENSTREETMAP BASEMAP
         // =========================================================
 
         L.tileLayer(
-            'https://gismaps.kingcounty.gov/ArcGIS/rest/services/BaseMaps/KingCo_Aerial_2009/MapServer/tile/{z}/{y}/{x}',
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
-                maxZoom: 23,
-                attribution: '&copy; King County GIS Center'
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
             }
         ).addTo(map);
+
+
+        // =========================================================
+        // GARDEN GEOMETRY
+        // =========================================================
+
+        fetch('garden-geometry.geojson')
+            .then(response => response.json())
+            .then(data => {
+
+                const garden = L.geoJSON(data, {
+                    style: {
+                        color: '#3388ff',
+                        weight: 3,
+                        fillColor: '#3388ff',
+                        fillOpacity: 0.15
+                    }
+                }).addTo(map);
+
+
+                // Zoom to the garden
+                map.fitBounds(garden.getBounds());
+
+
+                // Keep users inside the garden
+                map.setMaxBounds(garden.getBounds());
+
+            })
+            .catch(error => {
+                console.error(
+                    'Could not load garden-geometry.geojson:',
+                    error
+                );
+            });
 
 
         // =========================================================
@@ -66,20 +88,18 @@
         // =========================================================
 
         const plantStyle = {
-            radius: 3,
-            fillColor: '#3388ff',
+            radius: 2,
             color: '#000000',
             weight: 1,
-            opacity: 1,
-            fillOpacity: 0.9
+            fillColor: '#3388ff',
+            fillOpacity: 1
         };
 
 
         // =========================================================
-        // PLANT POINTS
+        // PLANT 6
         // =========================================================
 
-        // Original Plant 6
         L.circleMarker(
             [47.7346560, -122.2569456],
             plantStyle
@@ -91,175 +111,85 @@
         );
 
 
-        // Point 1
-        L.circleMarker(
-            [47.7346974, -122.2569538],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 1</b>");
+        // =========================================================
+        // NEW PLANT POINTS
+        // =========================================================
 
+        L.circleMarker([47.7346974, -122.2569538], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 1</b>");
 
-        // Point 2
-        L.circleMarker(
-            [47.7345770, -122.2570473],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 2</b>");
+        L.circleMarker([47.7345770, -122.2570473], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 2</b>");
 
+        L.circleMarker([47.7344863, -122.2570291], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 3</b>");
 
-        // Point 3
-        L.circleMarker(
-            [47.7344863, -122.2570291],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 3</b>");
+        L.circleMarker([47.7345030, -122.2570256], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 4</b>");
 
+        L.circleMarker([47.7345285, -122.2570149], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 5</b>");
 
-        // Point 4
-        L.circleMarker(
-            [47.7345030, -122.2570256],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 4</b>");
+        L.circleMarker([47.7345389, -122.2570277], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 6</b>");
 
+        L.circleMarker([47.7345305, -122.2570339], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 7</b>");
 
-        // Point 5
-        L.circleMarker(
-            [47.7345285, -122.2570149],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 5</b>");
+        L.circleMarker([47.7345457, -122.2570543], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 8</b>");
 
+        L.circleMarker([47.7345297, -122.2570654], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 9</b>");
 
-        // Point 6
-        L.circleMarker(
-            [47.7345389, -122.2570277],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 6</b>");
+        L.circleMarker([47.7345306, -122.2570681], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 10</b>");
 
+        L.circleMarker([47.7345339, -122.2570725], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 11</b>");
 
-        // Point 7
-        L.circleMarker(
-            [47.7345305, -122.2570339],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 7</b>");
+        L.circleMarker([47.7345046, -122.2571349], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 12</b>");
 
+        L.circleMarker([47.7344975, -122.2571361], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 13</b>");
 
-        // Point 8
-        L.circleMarker(
-            [47.7345457, -122.2570543],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 8</b>");
+        L.circleMarker([47.7344831, -122.2571443], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 14</b>");
 
+        L.circleMarker([47.7344940, -122.2571582], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 15</b>");
 
-        // Point 9
-        L.circleMarker(
-            [47.7345297, -122.2570654],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 9</b>");
+        L.circleMarker([47.7345022, -122.2571666], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 16</b>");
 
+        L.circleMarker([47.7345199, -122.2571661], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 17</b>");
 
-        // Point 10
-        L.circleMarker(
-            [47.7345306, -122.2570681],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 10</b>");
+        L.circleMarker([47.7345362, -122.2571556], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 18</b>");
 
-
-        // Point 11
-        L.circleMarker(
-            [47.7345339, -122.2570725],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 11</b>");
-
-
-        // Point 12
-        L.circleMarker(
-            [47.7345046, -122.2571349],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 12</b>");
-
-
-        // Point 13
-        L.circleMarker(
-            [47.7344975, -122.2571361],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 13</b>");
-
-
-        // Point 14
-        L.circleMarker(
-            [47.7344831, -122.2571443],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 14</b>");
-
-
-        // Point 15
-        L.circleMarker(
-            [47.7344940, -122.2571582],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 15</b>");
-
-
-        // Point 16
-        L.circleMarker(
-            [47.7345022, -122.2571666],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 16</b>");
-
-
-        // Point 17
-        L.circleMarker(
-            [47.7345199, -122.2571661],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 17</b>");
-
-
-        // Point 18
-        L.circleMarker(
-            [47.7345362, -122.2571556],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 18</b>");
-
-
-        // Point 19
-        L.circleMarker(
-            [47.7345397, -122.2571437],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup("<b>New Point 19</b>");
+        L.circleMarker([47.7345397, -122.2571437], plantStyle)
+            .addTo(map)
+            .bindPopup("<b>New Point 19</b>");
 
     </script>
 
