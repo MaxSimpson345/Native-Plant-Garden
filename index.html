@@ -107,6 +107,22 @@
     );
 
 
+        // =========================================================
+        // OPENSTREETMAP BASEMAP
+        // =========================================================
+
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxNativeZoom: 19,
+                maxZoom: 30,
+
+                attribution:
+                    '&copy; OpenStreetMap contributors'
+            }
+        ).addTo(map);
+
+
     // =========================================================
     // GARDEN AREAS
     // =========================================================
