@@ -14,6 +14,59 @@
             height: 100vh;
             width: 100%;
         }
+
+        .other-point {
+            background: transparent;
+            border: none;
+        }
+
+        .other-point div {
+            border: 1px solid #000000;
+            box-sizing: border-box;
+        }
+
+        .plant-filter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+            max-width: 220px;
+            max-height: 80vh;
+            overflow-y: auto;
+            font-family: Arial, sans-serif;
+        }
+
+        .plant-filter-title {
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .plant-filter button {
+            display: block;
+            width: 100%;
+            margin: 3px 0;
+            padding: 5px 8px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .plant-filter button:hover {
+            background: #eeeeee;
+        }
+
+        .plant-filter button.active {
+            font-weight: bold;
+            background: #dddddd;
+        }
+
     </style>
 </head>
 
@@ -30,12 +83,9 @@
         // MAP MOVEMENT BOUNDARY
         // =========================================================
 
-        // This is intentionally larger than the actual garden.
-        // It controls where the user is allowed to move the map.
-
         const movementBounds = L.latLngBounds(
-            [47.73435, -122.25735],   // Southwest
-            [47.73485, -122.25675]    // Northeast
+            [47.73435, -122.25735],
+            [47.73485, -122.25675]
         );
 
 
@@ -45,17 +95,10 @@
 
         const map = L.map('map', {
             minZoom: 17,
-
-            // Allows extremely close zooming
             maxZoom: 30,
 
-//mess with later for boundaries
-
-            // Prevents the user from wandering away
-           // maxBounds: movementBounds,
-
-            // Makes the boundary firm
-            //maxBoundsViscosity: 1.0
+            // maxBounds: movementBounds,
+            // maxBoundsViscosity: 1.0
 
         }).setView(
             [47.7346560, -122.2569252],
@@ -68,12 +111,9 @@
         // =========================================================
 
         L.tileLayer(
-           // 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
-                // Highest zoom level where OSM actually has tiles
                 maxNativeZoom: 19,
-
-                // But allow Leaflet to keep zooming
                 maxZoom: 30,
 
                 attribution:
@@ -82,163 +122,553 @@
         ).addTo(map);
 
 
+// =========================================================
+// GARDEN AREAS
+// =========================================================
+
+// Area 1
+fetch('garden-geometry.geojson')
+    .then(response => response.json())
+    .then(data => {
+        L.geoJSON(data, {
+            style: {
+                color: '#3388ff',
+                weight: 3,
+                fillColor: '#3388ff',
+                fillOpacity: 0.3
+            }
+        }).addTo(map);
+    })
+    .catch(error => {
+        console.error('Could not load garden-geometry.geojson:', error);
+    });
+
+
+// Area 2
+fetch('garden-area-2.json')
+    .then(response => response.json())
+    .then(data => {
+        L.geoJSON(data, {
+            style: {
+                color: '#3388ff',
+                weight: 3,
+                fillColor: '#3388ff',
+                fillOpacity: 0.3
+            }
+        }).addTo(map);
+    })
+    .catch(error => {
+        console.error('Could not load garden-area-2.json:', error);
+    });
+
+
+// Area 3
+fetch('garden-area-3.json')
+    .then(response => response.json())
+    .then(data => {
+        L.geoJSON(data, {
+            style: {
+                color: '#3388ff',
+                weight: 3,
+                fillColor: '#3388ff',
+                fillOpacity: 0.3
+            }
+        }).addTo(map);
+    })
+    .catch(error => {
+        console.error('Could not load garden-area-3.json:', error);
+    });
+
+
+// Area 4
+fetch('garden-area-4.json')
+    .then(response => response.json())
+    .then(data => {
+        L.geoJSON(data, {
+            style: {
+                color: '#3388ff',
+                weight: 3,
+                fillColor: '#3388ff',
+                fillOpacity: 0.3
+            }
+        }).addTo(map);
+    })
+    .catch(error => {
+        console.error('Could not load garden-area-4.json:', error);
+    });
+
+
+
         // =========================================================
-        // GARDEN GEOMETRY
+        // PLANT COLORS
+        // Each plant name gets its own consistent color.
         // =========================================================
 
-        fetch('garden-geometry.geojson')
+        const plantColors = {};
+        const colorPalette = [
+            "#e6194b", "#3cb44b", "#4363d8", "#f58231",
+            "#911eb4", "#42d4f4", "#f032e6", "#bfef45",
+            "#fabed4", "#469990", "#dcbeff", "#9A6324",
+            "#800000", "#aaffc3", "#000075", "#808000",
+            "#ffd8b1", "#000000", "#a9a9a9", "#ffe119"
+        ];
 
-            .then(response => response.json())
+        let nextColor = 0;
 
-            .then(data => {
+        function getPlantColor(name) {
+            if (!plantColors[name]) {
+                plantColors[name] =
+                    colorPalette[nextColor % colorPalette.length];
+                nextColor++;
+            }
+            return plantColors[name];
+        }
 
-                const garden = L.geoJSON(data, {
+        function getPlantStyle(name) {
+            const color = getPlantColor(name);
 
-                    style: {
-                        color: '#3388ff',
-                        weight: 3,
-                        fillColor: '#3388ff',
-                        fillOpacity: 0.3
-                    }
-
-                }).addTo(map);
-
-
-                // Zoom to the garden when the page loads
-                map.fitBounds(garden.getBounds());
-
-            })
-
-            .catch(error => {
-
-                console.error(
-                    'Could not load garden-geometry.geojson:',
-                    error
-                );
-
-            });
-
-
+            return {
+                radius: 2,
+                color: "#000000",
+                weight: 1,
+                fillColor: color,
+                fillOpacity: 1
+            };
+        }
         // =========================================================
         // PLANT POINT STYLE
         // =========================================================
 
-        const plantStyle = {
+        // All regular points use circleMarker, so their size stays
+        // the same in screen pixels when zooming.
+        // The fill color is determined by plant name.
 
-            // Very small dot
-            radius: 2,
+        // =========================================================
+        // PLANT POINT DATA
+        // =========================================================
 
-            // Outline
-            color: '#000000',
+        const plantPoints = [
+            { name: "Big-leaf Lupine", lat: 47.734776622, lon: -122.256725728 },
+            { name: "Bracken Fern", lat: 47.734692525, lon: -122.256867248 },
+            { name: "Bracken Fern", lat: 47.734698355, lon: -122.256865578 },
+            { name: "Bracken Fern", lat: 47.734693037, lon: -122.256885963 },
+            { name: "Bracken Fern", lat: 47.734664828, lon: -122.256824007 },
+            { name: "Bracken Fern", lat: 47.734657455, lon: -122.256810282 },
+            { name: "Bracken Fern", lat: 47.734661567, lon: -122.256801125 },
+            { name: "Bracken Fern", lat: 47.734656750, lon: -122.256799810 },
+            { name: "Bracken Fern", lat: 47.734647750, lon: -122.256809232 },
+            { name: "Bracken Fern", lat: 47.734667148, lon: -122.256796340 },
+            { name: "Bracken Fern", lat: 47.734671118, lon: -122.256796540 },
+            { name: "Bracken Fern", lat: 47.734676493, lon: -122.256796260 },
+            { name: "Bracken Fern", lat: 47.734692723, lon: -122.256792428 },
+            { name: "Bracken Fern", lat: 47.734705612, lon: -122.256786822 },
+            { name: "Bracken Fern", lat: 47.734714622, lon: -122.256787768 },
+            { name: "Bracken Fern", lat: 47.734717305, lon: -122.256778375 },
+            { name: "Bracken Fern", lat: 47.734723508, lon: -122.256775308 },
+            { name: "Bracken Fern", lat: 47.734734065, lon: -122.256853015 },
+            { name: "Bracken Fern", lat: 47.734414552, lon: -122.257119667 },
+            { name: "Bracken Fern", lat: 47.734417753, lon: -122.257119002 },
+            { name: "Bracken Fern", lat: 47.734422767, lon: -122.257109837 },
+            { name: "Bracken Fern", lat: 47.734425063, lon: -122.257104410 },
+            { name: "Bracken Fern", lat: 47.734427448, lon: -122.257110580 },
+            { name: "Bracken Fern", lat: 47.734433622, lon: -122.257109425 },
+            { name: "Bracken Fern", lat: 47.734432082, lon: -122.257105917 },
+            { name: "Bracken Fern", lat: 47.734433370, lon: -122.257109233 },
+            { name: "Bracken Fern", lat: 47.734440418, lon: -122.257115467 },
+            { name: "Bracken Fern", lat: 47.734442192, lon: -122.257115868 },
+            { name: "Bracken Fern", lat: 47.734447783, lon: -122.257119308 },
+            { name: "Bracken Fern", lat: 47.734449645, lon: -122.257122173 },
+            { name: "Bracken Fern", lat: 47.734454482, lon: -122.257135432 },
+            { name: "Bracken Fern", lat: 47.734454513, lon: -122.257137568 },
+            { name: "Bracken Fern", lat: 47.734463292, lon: -122.257145930 },
+            { name: "Bracken Fern", lat: 47.734467585, lon: -122.257141702 },
+            { name: "Bracken Fern", lat: 47.734466008, lon: -122.257134037 },
+            { name: "Bracken Fern", lat: 47.734470473, lon: -122.257142982 },
+            { name: "Bracken Fern", lat: 47.734483167, lon: -122.257158793 },
+            { name: "Bracken Fern", lat: 47.734485952, lon: -122.257162022 },
+            { name: "Bracken Fern", lat: 47.734469577, lon: -122.257168545 },
+            { name: "Bracken Fern", lat: 47.734486778, lon: -122.257148067 },
+            { name: "Bracken Fern", lat: 47.734534707, lon: -122.257050990 },
+            { name: "Canada Goldenrod", lat: 47.734779908, lon: -122.256702010 },
+            { name: "Common Camas", lat: 47.734459050, lon: -122.257174478 },
+            { name: "Common Camas", lat: 47.734455172, lon: -122.257179203 },
+            { name: "Native Plant Mapping deer fern zc", lat: 47.734736555, lon: -122.256906533 },
+            { name: "Native Plant Mapping deer fern zc", lat: 47.734732695, lon: -122.256921067 },
+            { name: "Native Plant Mapping deer fern zc", lat: 47.734741547, lon: -122.256929525 },
+            { name: "Native Plant Mapping deer fern zc", lat: 47.734738572, lon: -122.256936532 },
+            { name: "Native Plant Mapping deer fern zc", lat: 47.734712295, lon: -122.256947938 },
+            { name: "Douglas Aster", lat: 47.734788838, lon: -122.256725795 },
+            { name: "Douglas Aster", lat: 47.734787842, lon: -122.256720532 },
+            { name: "Douglas Aster", lat: 47.734432015, lon: -122.256857652 },
+            { name: "Douglas Aster", lat: 47.734437942, lon: -122.256848535 },
+            { name: "Douglas Aster", lat: 47.734429122, lon: -122.256869125 },
+            { name: "Experiments", lat: 47.734798798, lon: -122.256914460 },
+            { name: "Experiments", lat: 47.734451528, lon: -122.256855287 },
+            { name: "False Solomon’s Seal", lat: 47.734551880, lon: -122.257170803 },
+            { name: "False Solomon’s Seal", lat: 47.734515078, lon: -122.257188545 },
+            { name: "Fringe Cup", lat: 47.734775265, lon: -122.256698025 },
+            { name: "Kinnikinnick", lat: 47.734493333, lon: -122.257126667 },
+            { name: "Kinnikinnick", lat: 47.734504843, lon: -122.257198468 },
+            { name: "Kinnikinnick", lat: 47.734499587, lon: -122.257187173 },
+            { name: "Largeleaf Avens", lat: 47.734476883, lon: -122.257186235 },
+            { name: "Largeleaf Avens", lat: 47.734477518, lon: -122.257176943 },
+            { name: "Largeleaf Avens", lat: 47.734489325, lon: -122.257185640 },
+            { name: "Largeleaf Avens", lat: 47.734470037, lon: -122.257181065 },
+            { name: "Largeleaf Avens", lat: 47.734509300, lon: -122.257188812 },
+            { name: "Largeleaf Avens", lat: 47.734802090, lon: -122.256712590 },
+            { name: "Largeleaf Avens", lat: 47.734803277, lon: -122.256709850 },
+            { name: "Largeleaf Avens", lat: 47.734815622, lon: -122.256706153 },
+            { name: "Nurse Logs", lat: 47.734492912, lon: -122.257106358 },
+            { name: "Nurse Logs", lat: 47.734594348, lon: -122.257116077 },
+            { name: "Nurse Logs", lat: 47.734615678, lon: -122.256982662 },
+            { name: "Nurse Logs", lat: 47.734579417, lon: -122.256914825 },
+            { name: "Ocean Spray", lat: 47.734451503, lon: -122.256870183 },
+            { name: "Ocean Spray", lat: 47.734438257, lon: -122.256887672 },
+            { name: "Ocean Spray", lat: 47.734465737, lon: -122.256846980 },
+            { name: "Ocean Spray", lat: 47.734424073, lon: -122.257004998 },
+            { name: "Ocean Spray", lat: 47.734446437, lon: -122.256968058 },
+            { name: "Ocean Spray", lat: 47.734461608, lon: -122.256956978 },
+            { name: "Ocean Spray", lat: 47.734444590, lon: -122.256946498 },
+            { name: "Ocean Spray", lat: 47.734452708, lon: -122.256941938 },
+            { name: "Oregon Grape", lat: 47.734453397, lon: -122.257038715 },
+            { name: "Oregon Grape", lat: 47.734430450, lon: -122.257064920 },
+            { name: "Oregon Grape", lat: 47.734431887, lon: -122.257067078 },
+            { name: "Oregon Grape", lat: 47.734548745, lon: -122.257047573 },
+            { name: "Oregon Grape", lat: 47.734538920, lon: -122.257050517 },
+            { name: "Oregon Grape", lat: 47.734538583, lon: -122.257051248 },
+            { name: "Oregon Grape", lat: 47.734540683, lon: -122.257064038 },
+            { name: "Oregon Grape", lat: 47.734512483, lon: -122.257032745 },
+            { name: "Oregon Grape", lat: 47.734495217, lon: -122.257027898 },
+            { name: "Oregon Grape", lat: 47.734492660, lon: -122.257027468 },
+            { name: "Oregon Grape", lat: 47.734495662, lon: -122.257031408 },
+            { name: "Oregon Grape", lat: 47.734490065, lon: -122.257036125 },
+            { name: "Oregon Grape", lat: 47.734470988, lon: -122.257046503 },
+            { name: "Oregon Grape", lat: 47.734584088, lon: -122.256950378 },
+            { name: "Oregon Grape", lat: 47.734585702, lon: -122.256947978 },
+            { name: "Oregon Grape", lat: 47.734419548, lon: -122.257007765 },
+            { name: "Oregon Grape", lat: 47.734418737, lon: -122.257007772 },
+            { name: "Oregon Grape", lat: 47.734421352, lon: -122.257013988 },
+            { name: "Oregon Grape", lat: 47.734419833, lon: -122.257016852 },
+            { name: "Oregon Grape", lat: 47.734422683, lon: -122.257015320 },
+            { name: "Oregon Grape", lat: 47.734420898, lon: -122.257012170 },
+            { name: "Oregon Grape", lat: 47.734475523, lon: -122.256992418 },
+            { name: "Oregon Grape", lat: 47.734484937, lon: -122.256968197 },
+            { name: "Oregon Grape", lat: 47.734515420, lon: -122.256994693 },
+            { name: "Oregon Grape", lat: 47.734539907, lon: -122.256972568 },
+            { name: "Oregon Grape", lat: 47.734556953, lon: -122.256933938 },
+            { name: "Oregon Grape", lat: 47.734461253, lon: -122.256847070 },
+            { name: "Oregon Grape", lat: 47.734778712, lon: -122.256869272 },
+            { name: "Oregon Grape", lat: 47.734762755, lon: -122.256876813 },
+            { name: "Oregon Grape", lat: 47.734766858, lon: -122.256880072 },
+            { name: "Other", lat: 47.734458527, lon: -122.257057362 },
+            { name: "Other", lat: 47.734565628, lon: -122.257010073 },
+            { name: "Other", lat: 47.734569040, lon: -122.257049500 },
+            { name: "Other", lat: 47.734671910, lon: -122.256992217 },
+            { name: "Other", lat: 47.734682450, lon: -122.256982158 },
+            { name: "Other", lat: 47.734749378, lon: -122.256900837 },
+            { name: "Salal", lat: 47.734550953, lon: -122.256901525 },
+            { name: "Salal", lat: 47.734544715, lon: -122.256882592 },
+            { name: "Salal", lat: 47.734539123, lon: -122.256905915 },
+            { name: "Salal", lat: 47.734474322, lon: -122.256941998 },
+            { name: "Salal", lat: 47.734531467, lon: -122.257052708 },
+            { name: "Salal", lat: 47.734514515, lon: -122.257044718 },
+            { name: "Salal", lat: 47.734509807, lon: -122.257046183 },
+            { name: "Salal", lat: 47.734563398, lon: -122.257060503 },
+            { name: "Sword Fern", lat: 47.734649462, lon: -122.256930412 },
+            { name: "Sword Fern", lat: 47.734634682, lon: -122.256877695 },
+            { name: "Sword Fern", lat: 47.734690222, lon: -122.256950637 },
+            { name: "Sword Fern", lat: 47.734706727, lon: -122.256930370 },
+            { name: "Sword Fern", lat: 47.734701482, lon: -122.256924330 },
+            { name: "Sword Fern", lat: 47.734708372, lon: -122.256905642 },
+            { name: "Sword Fern", lat: 47.734713428, lon: -122.256899050 },
+            { name: "Sword Fern", lat: 47.734716830, lon: -122.256891108 },
+            { name: "Sword Fern", lat: 47.734783835, lon: -122.256848350 },
+            { name: "Sword Fern", lat: 47.734777560, lon: -122.256844467 },
+            { name: "Sword Fern", lat: 47.734612202, lon: -122.256886568 },
+            { name: "Sword Fern", lat: 47.734641072, lon: -122.256891740 },
+            { name: "Sword Fern", lat: 47.734648600, lon: -122.256909920 },
+            { name: "Sword Fern", lat: 47.734652235, lon: -122.256923243 },
+            { name: "Sword Fern", lat: 47.734657917, lon: -122.256911572 },
+            { name: "Sword Fern", lat: 47.734658152, lon: -122.256927102 },
+            { name: "Sword Fern", lat: 47.734679133, lon: -122.256917373 },
+            { name: "Sword Fern", lat: 47.734670113, lon: -122.256906172 },
+            { name: "Sword Fern", lat: 47.734660570, lon: -122.256870982 },
+            { name: "Sword Fern", lat: 47.734668963, lon: -122.256859278 },
+            { name: "Sword Fern", lat: 47.734690922, lon: -122.256838647 },
+            { name: "Sword Fern", lat: 47.734691097, lon: -122.256868173 },
+            { name: "Sword Fern", lat: 47.734695488, lon: -122.256879860 },
+            { name: "Sword Fern", lat: 47.734703028, lon: -122.256859843 },
+            { name: "Sword Fern", lat: 47.734713088, lon: -122.256864645 },
+            { name: "Sword Fern", lat: 47.734563350, lon: -122.256913603 },
+            { name: "Sword Fern", lat: 47.734553237, lon: -122.256935197 },
+            { name: "Sword Fern", lat: 47.734509472, lon: -122.256957857 },
+            { name: "Sword Fern", lat: 47.734492365, lon: -122.256959000 },
+            { name: "Sword Fern", lat: 47.734522765, lon: -122.256957393 },
+            { name: "Sword Fern", lat: 47.734519885, lon: -122.256905987 },
+            { name: "Sword Fern", lat: 47.734524275, lon: -122.256894685 },
+            { name: "Sword Fern", lat: 47.734496015, lon: -122.256895243 },
+            { name: "Sword Fern", lat: 47.734482863, lon: -122.256898142 },
+            { name: "Sword Fern", lat: 47.734484515, lon: -122.256892655 },
+            { name: "Sword Fern", lat: 47.734483955, lon: -122.256887307 },
+            { name: "Sword Fern", lat: 47.734480563, lon: -122.256854330 },
+            { name: "Sword Fern", lat: 47.734665712, lon: -122.257047698 },
+            { name: "Sword Fern", lat: 47.734751267, lon: -122.256985352 },
+            { name: "Sword Fern", lat: 47.734767350, lon: -122.256974432 },
+            { name: "Sword Fern", lat: 47.734777157, lon: -122.256956940 },
+            { name: "Sword Fern", lat: 47.734787350, lon: -122.256884980 },
+            { name: "Sword Fern", lat: 47.734778683, lon: -122.256937123 },
+            { name: "Sword Fern", lat: 47.734641227, lon: -122.257050727 },
+            { name: "Sword Fern", lat: 47.734636232, lon: -122.257036878 },
+            { name: "Sword Fern", lat: 47.734638985, lon: -122.257083130 },
+            { name: "Sword Fern", lat: 47.734617268, lon: -122.257043268 },
+            { name: "Sword Fern", lat: 47.734612545, lon: -122.257039232 },
+            { name: "Sword Fern", lat: 47.734602080, lon: -122.257037445 },
+            { name: "Sword Fern", lat: 47.734593965, lon: -122.257039162 },
+            { name: "Sword Fern", lat: 47.734583008, lon: -122.257042867 },
+            { name: "Sword Fern", lat: 47.734585683, lon: -122.257055678 },
+            { name: "Sword Fern", lat: 47.734593143, lon: -122.257056840 },
+            { name: "Sword Fern", lat: 47.734598952, lon: -122.257065780 },
+            { name: "Sword Fern", lat: 47.734609310, lon: -122.257058027 },
+            { name: "Sword Fern", lat: 47.734611235, lon: -122.257071640 },
+            { name: "Sword Fern", lat: 47.734516855, lon: -122.257043747 },
+            { name: "Sword Fern", lat: 47.734515545, lon: -122.257046377 },
+            { name: "Sword Fern", lat: 47.734530020, lon: -122.257043952 },
+            { name: "Sword Fern", lat: 47.734505770, lon: -122.257055328 },
+            { name: "Sword Fern", lat: 47.734489612, lon: -122.257084288 },
+            { name: "Sword Fern", lat: 47.734480243, lon: -122.257055797 },
+            { name: "Sword Fern", lat: 47.734534425, lon: -122.257131050 },
+            { name: "Sword Fern", lat: 47.734562803, lon: -122.257123232 },
+            { name: "Sword Fern", lat: 47.734569685, lon: -122.257126010 },
+            { name: "Sword Fern", lat: 47.734573365, lon: -122.257138430 },
+            { name: "Sword Fern", lat: 47.734580983, lon: -122.257128597 },
+            { name: "Sword Fern", lat: 47.734593008, lon: -122.257126998 },
+            { name: "Sword Fern", lat: 47.734609612, lon: -122.257115528 },
+            { name: "Trailing Blackberry", lat: 47.734663310, lon: -122.256964103 },
+            { name: "Trailing Blackberry", lat: 47.734663930, lon: -122.256957415 },
+            { name: "Trailing Blackberry", lat: 47.734661615, lon: -122.256952972 },
+            { name: "Trailing Blackberry", lat: 47.734664543, lon: -122.256965237 },
+            { name: "Trailing Blackberry", lat: 47.734668578, lon: -122.256957535 },
+            { name: "Trailing Blackberry", lat: 47.734652315, lon: -122.256979072 },
+            { name: "Trailing Blackberry", lat: 47.734643610, lon: -122.256969118 },
+            { name: "Trailing Blackberry", lat: 47.734612938, lon: -122.256945378 },
+            { name: "Trailing Blackberry", lat: 47.734631132, lon: -122.256939915 },
+            { name: "Trailing Blackberry", lat: 47.734621510, lon: -122.256945243 },
+            { name: "Trailing Blackberry", lat: 47.734619337, lon: -122.256954205 },
+            { name: "Trailing Blackberry", lat: 47.734612345, lon: -122.256965453 },
+            { name: "Trailing Blackberry", lat: 47.734607405, lon: -122.256956998 },
+            { name: "Trailing Blackberry", lat: 47.734593568, lon: -122.256940688 },
+            { name: "Trailing Blackberry", lat: 47.734594447, lon: -122.256958540 },
+            { name: "Trailing Blackberry", lat: 47.734588625, lon: -122.256962352 },
+            { name: "Trailing Blackberry", lat: 47.734594223, lon: -122.256893503 },
+            { name: "Trailing Blackberry", lat: 47.734597050, lon: -122.256890965 },
+            { name: "Trailing Blackberry", lat: 47.734613893, lon: -122.256885610 },
+            { name: "Trailing Blackberry", lat: 47.734625050, lon: -122.256890328 },
+            { name: "Trailing Blackberry", lat: 47.734628197, lon: -122.256871412 },
+            { name: "Trailing Blackberry", lat: 47.734638720, lon: -122.256859500 },
+            { name: "Trailing Blackberry", lat: 47.734642238, lon: -122.256853245 },
+            { name: "Trailing Blackberry", lat: 47.734644563, lon: -122.256842480 },
+            { name: "Trailing Blackberry", lat: 47.734642150, lon: -122.256833330 },
+            { name: "Trailing Blackberry", lat: 47.734639405, lon: -122.256830013 },
+            { name: "Trailing Blackberry", lat: 47.734630282, lon: -122.256819437 },
+            { name: "Trailing Blackberry", lat: 47.734625778, lon: -122.256828142 },
+            { name: "Trailing Blackberry", lat: 47.734594600, lon: -122.256968087 },
+            { name: "Trailing Blackberry", lat: 47.734543125, lon: -122.256995028 },
+            { name: "Trailing Blackberry", lat: 47.734561675, lon: -122.256970052 },
+            { name: "Trailing Blackberry", lat: 47.734555435, lon: -122.256962782 },
+            { name: "Trailing Blackberry", lat: 47.734554222, lon: -122.256964952 },
+            { name: "Trailing Blackberry", lat: 47.734554675, lon: -122.256981560 },
+            { name: "Trailing Blackberry", lat: 47.734561518, lon: -122.256934653 },
+            { name: "Trailing Blackberry", lat: 47.734566060, lon: -122.256924530 },
+            { name: "Trailing Blackberry", lat: 47.734566800, lon: -122.256905845 },
+            { name: "Trailing Blackberry", lat: 47.734566242, lon: -122.256888530 },
+            { name: "Trailing Blackberry", lat: 47.734570822, lon: -122.256892450 },
+            { name: "Trailing Blackberry", lat: 47.734576482, lon: -122.256888792 },
+            { name: "Trailing Blackberry", lat: 47.734556677, lon: -122.256876515 },
+            { name: "Trailing Blackberry", lat: 47.734556958, lon: -122.256868330 },
+            { name: "Trailing Blackberry", lat: 47.734541160, lon: -122.256856132 },
+            { name: "Trailing Blackberry", lat: 47.734530152, lon: -122.256864868 },
+            { name: "Trailing Blackberry", lat: 47.734524088, lon: -122.256872138 },
+            { name: "Trailing Blackberry", lat: 47.734520768, lon: -122.256884823 },
+            { name: "Trailing Blackberry", lat: 47.734519830, lon: -122.256872290 },
+            { name: "Trailing Blackberry", lat: 47.734507100, lon: -122.256884883 },
+            { name: "Trailing Blackberry", lat: 47.734496302, lon: -122.256874272 },
+            { name: "Trailing Blackberry", lat: 47.734497442, lon: -122.256901538 },
+            { name: "Trailing Blackberry", lat: 47.734500290, lon: -122.256934098 },
+            { name: "Trailing Blackberry", lat: 47.734490150, lon: -122.256943385 },
+            { name: "Trailing Blackberry", lat: 47.734488775, lon: -122.256929383 },
+            { name: "Trailing Blackberry", lat: 47.734495908, lon: -122.256922835 },
+            { name: "Trailing Blackberry", lat: 47.734483637, lon: -122.256919643 },
+            { name: "Trailing Blackberry", lat: 47.734477983, lon: -122.256937343 },
+            { name: "Trailing Blackberry", lat: 47.734488360, lon: -122.256944498 },
+            { name: "Trailing Blackberry", lat: 47.734492133, lon: -122.256941825 },
+            { name: "Trailing Blackberry", lat: 47.734484295, lon: -122.256972680 },
+            { name: "Trailing Blackberry", lat: 47.734487035, lon: -122.256963908 },
+            { name: "Trailing Blackberry", lat: 47.734483797, lon: -122.256959118 },
+            { name: "Trailing Blackberry", lat: 47.734741458, lon: -122.256863597 },
+            { name: "Trailing Blackberry", lat: 47.734744318, lon: -122.256867582 },
+            { name: "Trailing Blackberry", lat: 47.734749930, lon: -122.256863667 },
+            { name: "Trailing Blackberry", lat: 47.734761215, lon: -122.256863113 },
+            { name: "Trailing Blackberry", lat: 47.734773845, lon: -122.256861430 },
+            { name: "Trailing Blackberry", lat: 47.734780400, lon: -122.256911283 },
+            { name: "Trailing Blackberry", lat: 47.734776455, lon: -122.256931270 },
+            { name: "Trailing Blackberry", lat: 47.734772205, lon: -122.256938900 },
+            { name: "Trailing Blackberry", lat: 47.734771555, lon: -122.256933110 },
+            { name: "Trailing Blackberry", lat: 47.734744042, lon: -122.256981712 },
+            { name: "Trailing Blackberry", lat: 47.734709507, lon: -122.257019645 },
+            { name: "Trailing Blackberry", lat: 47.734695933, lon: -122.257048288 },
+            { name: "Trailing Blackberry", lat: 47.734683722, lon: -122.257065703 },
+            { name: "Trillium", lat: 47.734785493, lon: -122.256715182 },
+            { name: "Trillium", lat: 47.734558500, lon: -122.257010337 },
+            { name: "Unknown", lat: 47.734766800, lon: -122.256693690 },
+            { name: "Unknown", lat: 47.734779875, lon: -122.256714440 },
+            { name: "Unknown", lat: 47.734558157, lon: -122.256896125 },
+            { name: "Unknown", lat: 47.734558925, lon: -122.256888647 },
+            { name: "Unknown", lat: 47.734560043, lon: -122.256886242 },
+            { name: "Unknown", lat: 47.734562932, lon: -122.256881005 },
+            { name: "Waxberry", lat: 47.734408095, lon: -122.257027890 },
+            { name: "Waxberry", lat: 47.734401305, lon: -122.257031325 },
+            { name: "Waxberry", lat: 47.734415453, lon: -122.257036190 },
+            { name: "Waxberry", lat: 47.734452125, lon: -122.257008720 },
+            { name: "Waxberry", lat: 47.734459543, lon: -122.256995323 },
+            { name: "Waxberry", lat: 47.734490332, lon: -122.257171445 },
+            { name: "Waxberry", lat: 47.734465792, lon: -122.257060730 },
+            { name: "Waxberry", lat: 47.734462732, lon: -122.257071498 },
+            { name: "Wild Ginger", lat: 47.734780408, lon: -122.256708150 },
+            { name: "Wild Ginger", lat: 47.734788125, lon: -122.256707545 },
+            { name: "Wild Ginger", lat: 47.734800010, lon: -122.256693797 },
+            { name: "Wild Ginger", lat: 47.734813570, lon: -122.256708078 },
+        ];
 
-            // Outline thickness
-            weight: 1,
+        // =========================================================
+        // PLANT FILTER / LAYERS
+        // =========================================================
 
-            // Inside color
-            fillColor: '#3388ff',
+        const plantLayers = {};
+        const filterControl = L.control({ position: "topright" });
 
-            // Fully visible
-            fillOpacity: 1
+        filterControl.onAdd = function() {
+            const div = L.DomUtil.create("div", "plant-filter");
 
+            div.innerHTML =
+                '<div class="plant-filter-title">Plant Types</div>' +
+                '<button id="show-all-plants" class="active">Show All</button>';
+
+            L.DomEvent.disableClickPropagation(div);
+            return div;
         };
 
+        filterControl.addTo(map);
 
-        // =========================================================
-        // PLANT 6
-        // =========================================================
+        // Create a separate Leaflet layer for every distinct plant name.
+        plantPoints.forEach(point => {
 
-        L.circleMarker(
-            [47.7346560, -122.2569456],
-            plantStyle
-        )
-        .addTo(map)
-        .bindPopup(
-            "<b>Plant 6: Salal (Gaultheria shallon)</b><br>" +
-            "Placeholder text. Can add health info or anything we want here."
-        );
+            if (!plantLayers[point.name]) {
+                plantLayers[point.name] = L.layerGroup();
 
+                const color = getPlantColor(point.name);
 
-        // =========================================================
-        // OTHER PLANT POINTS
-        // =========================================================
+                let button = document.createElement("button");
+                button.textContent = point.name;
+                button.dataset.plantName = point.name;
 
-        L.circleMarker([47.7346974, -122.2569538], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 1</b>");
+                button.addEventListener("click", function() {
+                    showOnlyPlant(point.name);
+                });
 
-        L.circleMarker([47.7345770, -122.2570473], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 2</b>");
+                document
+                    .querySelector(".plant-filter")
+                    .appendChild(button);
+            }
 
-        L.circleMarker([47.7344863, -122.2570291], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 3</b>");
+            const color = getPlantColor(point.name);
 
-        L.circleMarker([47.7345030, -122.2570256], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 4</b>");
+            if (point.name === "Other") {
 
-        L.circleMarker([47.7345285, -122.2570149], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 5</b>");
+                const otherIcon = L.divIcon({
+                    className: "other-point",
+                    html:
+                        '<div style="' +
+                        'width:8px;height:6px;' +
+                        'background:' + color + ';' +
+                        'border:1px solid #000000;' +
+                        'box-sizing:border-box;' +
+                        '"></div>',
+                    iconSize: [8, 6],
+                    iconAnchor: [4, 3]
+                });
 
-        L.circleMarker([47.7345389, -122.2570277], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 6</b>");
+                L.marker(
+                    [point.lat, point.lon],
+                    { icon: otherIcon }
+                )
+                .bindPopup("<b>" + point.name + "</b>")
+                .addTo(plantLayers[point.name]);
 
-        L.circleMarker([47.7345305, -122.2570339], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 7</b>");
+            } else {
 
-        L.circleMarker([47.7345457, -122.2570543], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 8</b>");
+                L.circleMarker(
+                    [point.lat, point.lon],
+                    getPlantStyle(point.name)
+                )
+                .bindPopup("<b>" + point.name + "</b>")
+                .addTo(plantLayers[point.name]);
 
-        L.circleMarker([47.7345297, -122.2570654], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 9</b>");
+            }
+        });
 
-        L.circleMarker([47.7345306, -122.2570681], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 10</b>");
+        // Add all plant layers initially.
+        Object.values(plantLayers).forEach(layer => {
+            layer.addTo(map);
+        });
 
-        L.circleMarker([47.7345339, -122.2570725], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 11</b>");
+        function showOnlyPlant(plantName) {
 
-        L.circleMarker([47.7345046, -122.2571349], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 12</b>");
+            Object.entries(plantLayers).forEach(([name, layer]) => {
+                if (name === plantName) {
+                    if (!map.hasLayer(layer)) {
+                        layer.addTo(map);
+                    }
+                } else {
+                    if (map.hasLayer(layer)) {
+                        map.removeLayer(layer);
+                    }
+                }
+            });
 
-        L.circleMarker([47.7344975, -122.2571361], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 13</b>");
+            document.querySelectorAll(".plant-filter button")
+                .forEach(button => {
+                    button.classList.remove("active");
+                });
 
-        L.circleMarker([47.7344831, -122.2571443], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 14</b>");
+            const selectedButton = document.querySelector(
+                '[data-plant-name="' + CSS.escape(plantName) + '"]'
+            );
 
-        L.circleMarker([47.7344940, -122.2571582], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 15</b>");
+            if (selectedButton) {
+                selectedButton.classList.add("active");
+            }
 
-        L.circleMarker([47.7345022, -122.2571666], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 16</b>");
+            document.getElementById("show-all-plants")
+                .classList.remove("active");
+        }
 
-        L.circleMarker([47.7345199, -122.2571661], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 17</b>");
+        document.getElementById("show-all-plants")
+            .addEventListener("click", function() {
 
-        L.circleMarker([47.7345362, -122.2571556], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 18</b>");
+                Object.values(plantLayers).forEach(layer => {
+                    if (!map.hasLayer(layer)) {
+                        layer.addTo(map);
+                    }
+                });
 
-        L.circleMarker([47.7345397, -122.2571437], plantStyle)
-            .addTo(map)
-            .bindPopup("<b>New Point 19</b>");
+                document.querySelectorAll(".plant-filter button")
+                    .forEach(button => {
+                        button.classList.remove("active");
+                    });
+
+                this.classList.add("active");
+            });
 
     </script>
-
 </body>
 </html>
