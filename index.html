@@ -192,6 +192,8 @@
     // PLANT POINT DATA
     // =========================================================
 
+
+    
     const plantPoints = [
         { name: "Big-leaf Lupine", lat: 47.734776622, lon: -122.256725728 },
         { name: "Bracken Fern", lat: 47.734692525, lon: -122.256867248 },
@@ -484,6 +486,10 @@
         { name: "Wild Ginger", lat: 47.734813570, lon: -122.256708078 },
     ];
 
+    plantPoints = plantPoints.map(point => ({
+    ...point,
+    lon: point.lon + 0.000043837
+}));
 
     // =========================================================
     // PLANT COLORS
