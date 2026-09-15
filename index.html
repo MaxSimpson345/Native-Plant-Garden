@@ -12,7 +12,7 @@
     #map {
         height: 100vh;
         width: 100%;
-        background: #6b5638;
+        background: #cfe8c8;
     }
 
     .other-point {
@@ -21,8 +21,11 @@
     }
 
     .other-point div {
-        border: 1px solid #000000;
-        box-sizing: border-box;
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 11px solid #000000;
     }
 
     .plant-filter {
@@ -92,17 +95,8 @@
     // =========================================================
 
     const map = L.map('map', {
-
-        // Smaller zoom increments for smoother zooming
         minZoom: 17,
         maxZoom: 30,
-        zoomSnap: 0.25,
-        zoomDelta: 0.25,
-        wheelPxPerZoomLevel: 180,
-
-        // Smooth zoom animation
-        zoomAnimation: true,
-        zoomAnimationThreshold: 4,
 
         // maxBounds: movementBounds,
         // maxBoundsViscosity: 1.0
@@ -126,7 +120,7 @@
 
 
     // Area 1
-    fetch('garden-area-1.json')
+    fetch('garden-geometry.geojson')
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
@@ -176,53 +170,6 @@
             console.error('Could not load garden-area-4.json:', error);
         });
 
-
-
-    // =========================================================
-    // PLANT COLORS
-    // Each plant name gets its own consistent color.
-    // =========================================================
-
-    const plantColors = {};
-    const colorPalette = [
-        "#e6194b", "#3cb44b", "#4363d8", "#f58231",
-        "#911eb4", "#42d4f4", "#f032e6", "#bfef45",
-        "#fabed4", "#469990", "#dcbeff", "#9A6324",
-        "#800000", "#aaffc3", "#000075", "#808000",
-        "#ffd8b1", "#000000", "#a9a9a9", "#ffe119"
-    ];
-
-    let nextColor = 0;
-
-    function getPlantColor(name) {
-        if (!plantColors[name]) {
-            plantColors[name] =
-                colorPalette[nextColor % colorPalette.length];
-            nextColor++;
-        }
-        return plantColors[name];
-    }
-
-    function getPlantStyle(name) {
-        const color = getPlantColor(name);
-
-        return {
-            radius: 4,
-            color: "#000000",
-            weight: 1,
-            fillColor: color,
-            fillOpacity: 1
-        };
-    }
-
-
-    // =========================================================
-    // PLANT POINT STYLE
-    // =========================================================
-
-    // All regular points use circleMarker, so their size stays
-    // the same in screen pixels when zooming.
-    // The fill color is determined by plant name.
 
 
     // =========================================================
@@ -523,6 +470,83 @@
 
 
     // =========================================================
+    // PLANT COLORS
+    // Color is determined by the number of points for each
+    // plant type.
+    //
+    // Fewer points = lighter green
+    // More points = darker green
+    //
+    // "Other" is excluded from this calculation.
+    // =========================================================
+
+    const plantCounts = {};
+
+    plantPoints.forEach(point => {
+        if (point.name !== "Other") {
+            if (!plantCounts[point.name]) {
+                plantCounts[point.name] = 0;
+            }
+
+            plantCounts[point.name]++;
+        }
+    });
+
+    const plantColors = {};
+
+    const plantCountValues = Object.values(plantCounts);
+
+    const minPlantCount = Math.min(...plantCountValues);
+    const maxPlantCount = Math.max(...plantCountValues);
+
+
+    function getPlantColor(name) {
+
+        if (name === "Other") {
+            return "#000000";
+        }
+
+        if (!plantColors[name]) {
+
+            const count = plantCounts[name];
+
+            let ratio;
+
+            if (maxPlantCount === minPlantCount) {
+                ratio = 0.5;
+            } else {
+                ratio =
+                    (count - minPlantCount) /
+                    (maxPlantCount - minPlantCount);
+            }
+
+            // Light green for the fewest points.
+            // Dark green for the most points.
+            const lightness = 78 - (ratio * 48);
+
+            plantColors[name] =
+                `hsl(130, 45%, ${lightness}%)`;
+        }
+
+        return plantColors[name];
+    }
+
+
+    function getPlantStyle(name) {
+
+        const color = getPlantColor(name);
+
+        return {
+            radius: 3,
+            color: "#000000",
+            weight: 1,
+            fillColor: color,
+            fillOpacity: 1
+        };
+    }
+
+
+    // =========================================================
     // PLANT FILTER / LAYERS
     // =========================================================
 
@@ -543,15 +567,18 @@
     filterControl.addTo(map);
 
 
-    // Create a separate Leaflet layer for every distinct plant name.
+    // =========================================================
+    // CREATE PLANT POINTS
+    // =========================================================
+
     plantPoints.forEach(point => {
 
         if (!plantLayers[point.name]) {
+
             plantLayers[point.name] = L.layerGroup();
 
-            const color = getPlantColor(point.name);
-
             let button = document.createElement("button");
+
             button.textContent = point.name;
             button.dataset.plantName = point.name;
 
@@ -564,21 +591,21 @@
                 .appendChild(button);
         }
 
-        const color = getPlantColor(point.name);
+
+        // =====================================================
+        // OTHER POINTS
+        // =====================================================
 
         if (point.name === "Other") {
 
             const otherIcon = L.divIcon({
                 className: "other-point",
+
                 html:
-                    '<div style="' +
-                    'width:16px;height:12px;' +
-                    'background:' + color + ';' +
-                    'border:1px solid #000000;' +
-                    'box-sizing:border-box;' +
-                    '"></div>',
-                iconSize: [16, 12],
-                iconAnchor: [8, 6]
+                    '<div></div>',
+
+                iconSize: [12, 11],
+                iconAnchor: [6, 5.5]
             });
 
             L.marker(
@@ -587,6 +614,11 @@
             )
             .bindPopup("<b>" + point.name + "</b>")
             .addTo(plantLayers[point.name]);
+
+
+        // =====================================================
+        // REGULAR PLANT POINTS
+        // =====================================================
 
         } else {
 
@@ -601,57 +633,81 @@
     });
 
 
-    // Add all plant layers initially.
+    // =========================================================
+    // ADD ALL PLANT LAYERS INITIALLY
+    // =========================================================
+
     Object.values(plantLayers).forEach(layer => {
         layer.addTo(map);
     });
 
 
+    // =========================================================
+    // SHOW ONLY ONE PLANT TYPE
+    // =========================================================
+
     function showOnlyPlant(plantName) {
 
         Object.entries(plantLayers).forEach(([name, layer]) => {
+
             if (name === plantName) {
+
                 if (!map.hasLayer(layer)) {
                     layer.addTo(map);
                 }
+
             } else {
+
                 if (map.hasLayer(layer)) {
                     map.removeLayer(layer);
                 }
+
             }
         });
+
 
         document.querySelectorAll(".plant-filter button")
             .forEach(button => {
                 button.classList.remove("active");
             });
 
+
         const selectedButton = document.querySelector(
             '[data-plant-name="' + CSS.escape(plantName) + '"]'
         );
 
+
         if (selectedButton) {
             selectedButton.classList.add("active");
         }
+
 
         document.getElementById("show-all-plants")
             .classList.remove("active");
     }
 
 
+    // =========================================================
+    // SHOW ALL PLANTS
+    // =========================================================
+
     document.getElementById("show-all-plants")
         .addEventListener("click", function() {
 
             Object.values(plantLayers).forEach(layer => {
+
                 if (!map.hasLayer(layer)) {
                     layer.addTo(map);
                 }
+
             });
+
 
             document.querySelectorAll(".plant-filter button")
                 .forEach(button => {
                     button.classList.remove("active");
                 });
+
 
             this.classList.add("active");
         });
